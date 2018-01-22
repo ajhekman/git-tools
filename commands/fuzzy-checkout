@@ -2,46 +2,52 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-#/ Usage:
+#/ Usage: fuzzy-checkout
 #/ Description:
-#/ Examples:
+#/   Lists all branches by last commit date in a fuzzy find cli provided by
+#/   `fzf`. The selected branch is sent to `git checkout`. Remote branch
+#/   names are stripped of `remotes/<origin name>/` for compatability.
+#/
 #/ Options:
 #/   --help: Display this help message
+#/           Use git checkout --help to see help for `checkout`
+#/
+#/ Notes:
+#/  All other commands except for `--help` are forwarded to `git checkout`,
+#/  bypassing fuzzy finding.
+#/
+#/  Place this script in your PATH, and alias it in your `.gitconfig`
+#/
 usage() { grep '^#/' "$0" | cut -c4- ; exit 0 ; }
 expr "$*" : ".*--help" > /dev/null && usage
 
-readonly LOG_FILE="/tmp/$(basename "$0").log"
-info()    { echo "[INFO]    $@" | tee -a "$LOG_FILE" >&2 ; }
-warning() { echo "[WARNING] $@" | tee -a "$LOG_FILE" >&2 ; }
-error()   { echo "[ERROR]   $@" | tee -a "$LOG_FILE" >&2 ; }
-fatal()   { echo "[FATAL]   $@" | tee -a "$LOG_FILE" >&2 ; exit 1 ; }
+info()    { echo "[INFO]    $@" ; }
+fatal()   { echo "[FATAL]   $@" ; exit 1 ; }
 
-
-# cleanup() {
-    # Remove temporary files
-    # Restart services
-    # ...
-# }
+noop() { echo 'noop' > /dev/null ; }
 
 fuzzy-checkout() {
   local branches branch
-  branches=$(git branch --all | grep -v HEAD) &&
+  if [[ -x "$(which fzf)" ]]; then
+    noop
+  else
+    fatal "fzf not found. Check path for fzf, or install fzf."
+  fi
+
+  branches=$(git branch --all --sort=-committerdate | grep -v HEAD) &&
   branch=$(echo "$branches" |
-           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+           fzf -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
   git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
 }
 
 normal-checkout() {
-  git checkout $@
+  git checkout "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
-    # trap cleanup EXIT
-    # Script goes here
-    if [[ $# -eq 0 ]];
-    then
+    if [[ $# -eq 0 ]]; then
       fuzzy-checkout;
     else
-      normal-checkout;
+      normal-checkout "$@";
     fi
 fi
