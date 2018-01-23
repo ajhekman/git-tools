@@ -6,7 +6,7 @@ IFS=$'\n\t'
 #/ Description:
 #/   Lists all branches by last commit date in a fuzzy find cli provided by
 #/   `fzf`. The selected branch is sent to `git checkout`. Remote branch
-#/   names are stripped of `remotes/<origin name>/` for compatability.
+#/   names are stripped of `remotes/<origin name>/` for compatibility.
 #/
 #/ Options:
 #/   --help: Display this help message
