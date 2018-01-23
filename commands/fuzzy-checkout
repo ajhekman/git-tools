@@ -30,9 +30,7 @@ noop() { echo 'noop' > /dev/null ; }
 
 fuzzy-checkout() {
   local branches branch
-  if [[ -x "$(which fzf)" ]]; then
-    noop
-  else
+  if [[ !(-x "$(which fzf)") ]]; then
     fatal "fzf not found. Check path for fzf, or install fzf."
   fi
 
