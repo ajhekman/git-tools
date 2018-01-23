@@ -26,7 +26,6 @@ expr "$*" : ".*--help" > /dev/null && usage
 
 info()    { echo "[INFO]    $@" ; }
 fatal()   { echo "[FATAL]   $@" ; exit 1 ; }
-noop() { echo 'noop' > /dev/null ; }
 
 fuzzy-checkout() {
   local branches branch
