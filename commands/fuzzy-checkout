@@ -12,6 +12,9 @@ IFS=$'\n\t'
 #/   --help: Display this help message
 #/           Use git checkout --help to see help for `checkout`
 #/
+#/ Dependencies:
+#/  * https://github.com/junegunn/fzf
+#/
 #/ Notes:
 #/  All other commands except for `--help` are forwarded to `git checkout`,
 #/  bypassing fuzzy finding.
@@ -23,7 +26,6 @@ expr "$*" : ".*--help" > /dev/null && usage
 
 info()    { echo "[INFO]    $@" ; }
 fatal()   { echo "[FATAL]   $@" ; exit 1 ; }
-
 noop() { echo 'noop' > /dev/null ; }
 
 fuzzy-checkout() {
@@ -35,6 +37,7 @@ fuzzy-checkout() {
   fi
 
   branches=$(git branch --all --sort=-committerdate | grep -v HEAD) &&
+  # Taken and modified from fzf wiki.
   branch=$(echo "$branches" |
            fzf -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
   git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
